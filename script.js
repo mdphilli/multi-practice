@@ -300,9 +300,15 @@ function clearHighScores() {
     const secretPassword = "wildcats123";  // Change this to your desired password
 
     if (password === secretPassword) {
-        localStorage.removeItem("highScores");
-        highScores = [];
-        displayHighScores();
+        // Remove high scores from Firebase
+        database.ref('highScores').remove()
+            .then(() => {
+                alert("High scores cleared!");
+                displayHighScores();
+            })
+            .catch(error => {
+                console.error("Error removing high scores: ", error);
+            });
     } else {
         alert("Ha!  Good try.  Only Mr. Phillips can do this.");
     }
