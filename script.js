@@ -1,3 +1,19 @@
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_Xw_OulIheZ8Quz-Bt539w6NbjxtG8Sc",
+    authDomain: "room-104-math-practice.firebaseapp.com",
+    databaseURL: "https://room-104-math-practice-default-rtdb.firebaseio.com",
+    projectId: "room-104-math-practice",
+    storageBucket: "room-104-math-practice.appspot.com",
+    messagingSenderId: "190214688719",
+    appId: "1:190214688719:web:0ef02788692afd686c4cba",
+    measurementId: "G-L0LXXEVMGK"
+  };
+
+firebase.initializeApp(firebaseConfig);
+
+const database = firebase.database();
+
+
 let correctCount = 0;
 let questionsAnswered = 0;
 let highScores = JSON.parse(localStorage.getItem("highScores") || "[]");
@@ -23,8 +39,10 @@ displayHighScores();
 function startGame() {
     document.getElementById("startButton").style.display = "none";
     document.getElementById("gameArea").style.display = "block";
+    enableChoiceButtons();  // <-- Add this line to enable the choice buttons
     generateProblem();
 }
+
 
 function disableChoiceButtons() {
     const choiceButtons = document.getElementById("choices").querySelectorAll("button");
@@ -244,12 +262,7 @@ function gameOver() {
     if (isTopFiveTime(totalPoints)) {
         const playerName = prompt("Congratulations! You made it to the top 5. Enter your name for the leaderboard:", "Player");
         if (playerName !== null && playerName !== "") {
-            highScores.push({ name: playerName, points: totalPoints });
-            highScores.sort((a, b) => b.points - a.points);
-            if (highScores.length > 5) {
-                highScores.length = 5;
-            }
-            localStorage.setItem("highScores", JSON.stringify(highScores));
+            database.ref('highScores').push({ name: playerName, points: totalPoints });
         }
     }
 
@@ -258,20 +271,41 @@ function gameOver() {
 }
 
 function displayHighScores() {
+  database.ref('highScores').orderByChild('points').once('value').then(snapshot => {
     const highScoresList = document.getElementById("highScores");
     highScoresList.innerHTML = "";
-    for (let i = 0; i < highScores.length; i++) {
-        const score = highScores[i];
-        const listItem = document.createElement("li");
-        listItem.textContent = `${score.name}: ${score.points} points`;
-        highScoresList.appendChild(listItem);
+
+    // Convert the snapshot into an array
+    const scores = [];
+    snapshot.forEach(childSnapshot => {
+      scores.push(childSnapshot.val());
+    });
+
+    // Sort the scores in descending order by points
+    scores.sort((a, b) => b.points - a.points);
+
+    // Display only the top 10 scores
+    for (let i = 0; i < Math.min(10, scores.length); i++) {
+      const listItem = document.createElement("li");
+      // Limit the name to 3 characters
+      const shortName = scores[i].name.substring(0, 3).toUpperCase();
+      listItem.textContent = `${i + 1}) ${shortName} . . . . ${scores[i].points} pts`;
+      highScoresList.appendChild(listItem);
     }
+  });
 }
 
 function clearHighScores() {
-    localStorage.removeItem("highScores");
-    highScores = [];
-    displayHighScores();
+    const password = prompt("Enter the password to clear high scores:");
+    const secretPassword = "wildcats123";  // Change this to your desired password
+
+    if (password === secretPassword) {
+        localStorage.removeItem("highScores");
+        highScores = [];
+        displayHighScores();
+    } else {
+        alert("Ha!  Good try.  Only Mr. Phillips can do this.");
+    }
 }
 
 function newGame() {
@@ -280,13 +314,8 @@ function newGame() {
     document.getElementById("num1Box").style.display = "inline-block";
     document.getElementById("multiplier").style.display = "inline-block";
     document.getElementById("num2Box").style.display = "inline-block";
-    document.getElementById("choices").style.display = "block";
     document.getElementById("celebration").style.display = "none";
-
-    const choiceButtons = document.getElementById("choices").querySelectorAll("button");
-    choiceButtons.forEach(button => {
-        button.style.display = "inline-block";
-    });
+    document.getElementById("choices").style.display = "block";  // <-- Add this line to show the choices again
 
     consecutiveCorrect = 0;
     correctCount = 0;
@@ -295,5 +324,7 @@ function newGame() {
     document.getElementById("stopwatch").textContent = "5000";
     document.getElementById("progressBar").style.width = "0%";
 
+    // Reset the game state and start a new game
     startGame();
 }
+
