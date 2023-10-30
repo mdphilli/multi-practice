@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Practice!</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="container">
+    <img id="arcadeBanner" src="arcade-banner.png" alt="Arcade High Scores!">
+    <button id="startButton" onclick="startGame()">Start</button>
+    
+    <div id="gameArea" style="display: none;">
+        <div>
+    <span id="num1Box" class="flashCard"></span> <!-- Box for the first number -->
+    <span id="multiplier" class="flashCard">x</span> <!-- Box for the multiplication symbol -->
+    <span id="num2Box" class="flashCard"></span> <!-- Box for the second number -->
+        </div>
+        <div id="streakFeedback" style="font-size: 24px; font-weight: bold; margin: 10px 0;"></div>
+        <div id="choices">
+    <button onclick="handleChoice(this)">??</button>
+    <button onclick="handleChoice(this)">??</button>
+    <button onclick="handleChoice(this)">??</button>
+    <button onclick="handleChoice(this)">??</button>
+    <button onclick="handleChoice(this)">??</button>
+        </div>
+        <span id="stopwatch">1000</span>
+        <div id="feedback"></div>
+        <div id="celebration" style="display: none; font-size: 36px;">
+    		🎉 Congratulations! Game Over! 🥳
+	</div>
+        <div id="progressContainer" style="background-color: #e0e0e0; width: 100%; height: 20px; border-radius: 10px; margin-top: 10px;">
+            <div id="progressBar" style="background-color: #4CAF50; width: 0%; height: 100%; border-radius: 10px;"></div>
+        </div>
+    </div>
+    <button id="newGameButton" onclick="newGame()" style="display: none; margin: 20px auto">New Game</button>
+    <h2>High Scores</h2>
+    <ul id="highScores"></ul>
+    <button onclick="clearHighScores()">Clear High Scores</button>
+</div>
+
+<audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+<audio id="incorrectSound" src="incorrect.mp3" preload="auto"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    font-family: 'Press Start 2P', cursive;
+}
+
+button, #choices button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 10px 0;
+}
+
+button:hover, #choices button:hover {
+    background-color: #2980b9;
+}
+
+button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+input[type="number"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#progressContainer {
+    background-color: #e0e0e0;
+    width: 100%;
+    height: 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+#progressBar {
+    background-color: #4CAF50;
+    width: 0%;
+    height: 100%;
+}
+
+#stopwatch {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.5rem;
+    margin-top: 20px;
+}
+
+#arcadeBanner {
+    max-width: 100%;
+    display: block;
+    margin: 20px auto;
+    font-family: 'Press Start 2P', cursive;
+}
+
+ul#highScores {
+    list-style-type: none;
+    padding: 0;
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    margin-top: 10px;
+    background-color: #2c3e50;
+    font-family: 'Press Start 2P', cursive;
+}
+
+ul#highScores li {
+    font-size: 1.3rem;
+    padding: 10px;
+    color: #ecf0f1;
+    border-bottom: 1px solid #34495e;
+    font-family: 'Press Start 2P', cursive;
+}
+
+ul#highScores li:last-child {
+    border-bottom: none;
+}
+
+#choices button {
+    font-size: 20px;
+    margin: 5px;
+    animation-fill-mode: forwards !important;
+    animation-duration: 1s;
+}
+
+.flashCard {
+    font-size: 36px;
+    font-family: 'Comic Sans MS', sans-serif;
+    color: #2E86C1;
+    background-color: #F4E1D2;
+    padding: 20px;
+    border: 2px solid #2E86C1;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    display: inline-block;
+    transform-origin: center center;
+}
+
+.times-symbol {
+    font-family: ' 2P', cursive;
+}
+
+@keyframes firework {
+    0% { background-color: #3498db; transform: scale(1); }
+    25% { background-color: #AED6F1; transform: scale(1.1); }
+    50% { background-color: #3498db; transform: scale(1.2); }
+    75% { background-color: #AED6F1; transform: scale(1.1); }
+    100% { background-color: #3498db; transform: scale(1); }
+}
+
+@keyframes incorrectAnimation {
+    0% { background-color: #E53935; transform: scale(1); }
+    50% { background-color: #B71C1C; transform: scale(0.95); }
+    100% { background-color: #E53935; transform: scale(1); }
+}
+
+@keyframes correctFlash {
+    0% { background-color: #F4E1D2; transform: scale(1); }
+    25% { background-color: #58D68D; transform: scale(1.1); } /* Bright green color */
+    50% { background-color: #F4E1D2; transform: scale(1); }
+    75% { background-color: #58D68D; transform: scale(1.1); }
+    100% { background-color: #F4E1D2; transform: scale(1); }
+}
+
+@keyframes incorrectFlash {
+    0%, 100% { background-color: #F4E1D2; }
+    50% { background-color: #E53935; }
+}
+
+#streakFeedback {
+    color: #E74C3C;  // Red color for emphasis
+    animation: pulse 1s infinite;  // Pulsing animation for attention
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+button[onclick="clearHighScores()"] {
+    padding: 5px 10px;
+    background-color: #e74c3c;
+    color: #fff;
+    margin-top: 10px;
+    font-size: 0.8rem;
+}
+
+button[onclick="clearHighScores()"]:hover {
+    background-color: #c0392b;
+}
+
