@@ -13,36 +13,185 @@ firebase.initializeApp(firebaseConfig);
 
 const database = firebase.database();
 
-
 let correctCount = 0;
 let questionsAnswered = 0;
-let highScores = JSON.parse(localStorage.getItem("highScores") || "[]");
+let highScores = [];
 let correctAnswer;
 let maxNum = 10;
 let totalPoints = 0;
 let problemInterval;
 let consecutiveCorrect = 0;
+let correctStreak = 0 // To count the number of consecutive correct answers
+let multiplier = 1;
 let isProcessing = false; // Flag to handle multiple clicks
-let streakFeedback = "";
+let gameIsActive = false;  // Flag to track game state
+
+// Define the constants outside the DOMContentLoaded event listener
+let modal; // Using let because we're going to assign them later
+let closeButton;
+let submitButton;
+let playerNameInput;
+
+document.addEventListener("DOMContentLoaded", function() {
+    modal = document.getElementById("highscoreModal");
+    closeButton = document.getElementById("modalCloseButton");
+    submitButton = document.getElementById("modalSubmitButton");
+    playerNameInput = document.getElementById("playerNameInput");
+
+    if (closeButton) {
+        closeButton.addEventListener("click", function() {
+            modal.style.display = "none";
+        });
+    }
+
+    if (submitButton) {
+        submitButton.addEventListener("click", function() {
+            const playerName = playerNameInput.value;
+            if (playerName !== "") {
+                const formattedName = playerName.substring(0, 3).toUpperCase();
+                database.ref('highScores').push({ name: formattedName, points: totalPoints });
+                modal.style.display = "none";
+            }
+        });
+    }
+});
+
+
+const GAME_STATE = {
+    PLAYING: 'playing',
+    PAUSED: 'paused',
+    GAME_OVER: 'game_over'
+};
+let currentState = GAME_STATE.GAME_OVER;  // By default, the game is over when the script loads
 
 const correctFeedbackMessages = [
-    "Great job!",
-    "Well done!",
+    "Great job!", "Well done!",
     "Nicely done!",
     "Keep it up!",
-    "You're on fire!"
+    "You're on fire!",
+    "Outstanding!",
+    "Impressive work!",
+    "Superb!",
+    "Fantastic!",
+    "This is the way.",
+    "Brilliant move!",
+    "Excellent!",
+    "You're nailing it!",
+    "On point!",
+    "Perfect answer!",
+    "Amazing effort!",
+    "You're crushing it!",
+    "A+ effort!",
+    "That's correct!",
+    "Right on target!",
+    "Top-notch!",
+    "You're a star!",
+    "Smashing success!",
+    "Spot on!",
+    "You're acing this!",
+    "Absolutely right!",
+    "You did it again!",
+    "Nailed it!",
+    "You're unstoppable!",
+    "You've got this!",
+    "Pure genius!",
+    "Stellar job!",
+    "You shine bright!",
+    "Remarkable!",
+    "Exceptional!",
+    "You're making waves!",
+    "You're a natural!",
+    "Spectacular!",
+    "You're soaring high!"
 ];
 
 
 displayHighScores();
 
-function startGame() {
-    document.getElementById("startButton").style.display = "none";
-    document.getElementById("gameArea").style.display = "block";
-    enableChoiceButtons();  // <-- Add this line to enable the choice buttons
-    generateProblem();
+
+function handleKeyInput(event) {
+    console.log("Key pressed:", event.key);
+
+    if (event.key === "Space" || event.code === "Space") {
+        event.preventDefault();  // Prevent the default behavior (scrolling down)
+        
+        if (currentState !== GAME_STATE.PLAYING) {
+            console.log("Starting a new game...");  // Let's add another console log
+            startGame();  // Assuming startGame is the function to start a new game
+            return;  // Exit out of the function early
+        }
+    }
+
+    switch (currentState) {
+        case GAME_STATE.PLAYING:
+                        console.log("In playing state");
+
+            handlePlayingState(event);
+            break;
+        case GAME_STATE.PAUSED:
+            handlePausedState(event);
+            break;
+        case GAME_STATE.GAME_OVER:
+            handleGameOverState(event);
+            break;
+        // ... handle other states if needed
+        default:
+            console.error('Unknown game state:', currentState);
+            break;
+    }
 }
 
+// INSERT THE KEYDOWN EVENT LISTENER HERE
+document.addEventListener('keydown', handleKeyInput);
+
+function startGame() {
+    currentState = GAME_STATE.PLAYING;
+    document.getElementById("startButton").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    enableChoiceButtons();  // <-- I'm assuming this line enables the choice buttons
+    generateProblem();
+    multiplier = 1;
+    document.getElementById("multiplierDisplay").textContent = `Multiplier: x${multiplier}`;
+    document.getElementById("multiplierDisplay").style.display = "block";
+}
+
+function handlePlayingState(event) {
+    if (event.key === "Enter" && !gameIsActive) {
+        startGame();
+        return;
+    }
+
+    if (!gameIsActive) {  // If the game isn't active, return early and don't process the key press
+        return;
+    }
+    
+    if (isProcessing) { // Don't process if we're already handling a choice
+        return;
+    }
+
+    if (event.key === "Escape") {
+        newGame();
+        return;
+    }
+
+    const choiceButtons = document.getElementById("choices").querySelectorAll("button");
+    const index = ['1', '2', '3', '4', '5'].indexOf(event.key);
+
+    if (index > -1 && index < choiceButtons.length) {
+        handleChoice(choiceButtons[index]);
+    }
+
+    function handlePlayingState(event) {
+    // ... rest of the code ...
+
+    const choiceButtons = document.getElementById("choices").querySelectorAll("button");
+    const index = ['1', '2', '3', '4', '5'].indexOf(event.key);
+
+    if (index > -1 && index < choiceButtons.length) {
+        handleChoice(choiceButtons[index]);
+    }
+}
+}
 
 function disableChoiceButtons() {
     const choiceButtons = document.getElementById("choices").querySelectorAll("button");
@@ -83,15 +232,13 @@ function generateProblem() {
 
     // Shuffle the choices
     choices.sort(() => Math.random() - 0.5);
-    let choicesContainer = document.getElementById("choices");
-    choicesContainer.innerHTML = '';
-    for (let choice of choices) {
-        let btn = document.createElement("button");
-        btn.innerText = choice;
-        btn.onclick = function() {
-            handleChoice(btn);
-        };
-        choicesContainer.appendChild(btn);
+
+    // Get the existing choice buttons from the DOM
+    let choiceButtons = document.querySelectorAll("#choices button");
+
+    // Update the text content of the existing buttons
+    for (let i = 0; i < choiceButtons.length; i++) {
+        choiceButtons[i].textContent = choices[i];
     }
 
     // Disable the choice buttons
@@ -113,16 +260,7 @@ function generateProblem() {
             }
         }, 5);
     }, 500); // 500ms delay
-
-    // Update streak feedback
-    let streakFeedbackElement = document.getElementById("streakFeedback");
-    if (consecutiveCorrect === 10 || consecutiveCorrect === 20 || consecutiveCorrect === 30) {
-        streakFeedbackElement.textContent = `${consecutiveCorrect} in a row! 🎉`;
-    } else {
-        streakFeedbackElement.textContent = "";
-    }
 }
-
 
 function playAudio(type) {
     let audioElement;
@@ -137,6 +275,32 @@ function playAudio(type) {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // Event listeners, DOM manipulations, and initializations can go here.
+
+    // Display the high scores when the page first loads.
+    displayHighScores();
+
+    // Add event listener to the start button.
+    document.getElementById("startButton").addEventListener('click', startGame);
+
+    // Add event listener to the new game button if present in your HTML.
+    const newGameButton = document.getElementById("newGameButton");
+    if (newGameButton) {
+        newGameButton.addEventListener('click', newGame);
+    }
+
+});
+
+document.getElementById('choices').addEventListener('click', function(event) {
+    const target = event.target;
+
+    // Check if the clicked element is a button
+    if (target.tagName.toLowerCase() === 'button') {
+        handleChoice(target);
+    }
+});
+
 function handleChoice(button) {
     // If we're already processing a choice, return early
     if (isProcessing) {
@@ -148,10 +312,10 @@ function handleChoice(button) {
     clearInterval(problemInterval);
     
     const userChoice = parseInt(button.textContent, 10);
-    const currentPoints = parseInt(document.getElementById("stopwatch").textContent, 10); // Capture the current points
+    // const currentPoints = parseInt(document.getElementById("stopwatch").textContent, 10); // Capture the current points - Comment or remove this line
 
     if (userChoice === correctAnswer) {
-        totalPoints += currentPoints; // Add the current points to the total
+        // totalPoints += currentPoints; // Add the current points to the total - Comment or remove this line
         handleCorrectAnswer();
     } else {
         handleIncorrectAnswer();
@@ -164,23 +328,15 @@ function handleCorrectAnswer() {
     document.getElementById("feedback").textContent = correctFeedbackMessages[randomFeedbackIndex];
     
     playAudio("correct");
-    correctCount++;
     questionsAnswered++;
     updateProgressBar();
     consecutiveCorrect++;
+    correctCount++;
 
-    if (consecutiveCorrect === 10) {
-        totalPoints += 1000;
-        streakFeedback = "10 in a row! 1000 BONUS POINTS!";
-    } else if (consecutiveCorrect === 20) {
-        totalPoints += 2000;
-        streakFeedback = "20 in a row! 2000 MORE BONUS POINTS!";
-    } else if (consecutiveCorrect === 30) {
-        totalPoints += 3000;
-        streakFeedback = "All Correct! 3000 MORE BONUS POINTS!";
-        gameOver();
-        return;
-    }
+    // Removed the line that was incrementing the multiplier by 0.1
+
+    const basePoints = parseInt(document.getElementById("stopwatch").textContent, 10);
+totalPoints += Math.round(basePoints * multiplier); // Multiply the base points by the current multiplier and round the result
 
     flashFlashcards("correctFlash");
 
@@ -189,6 +345,17 @@ function handleCorrectAnswer() {
         document.getElementById("num1Box").style.backgroundColor = "#F4E1D2";  // Reset to default color
         document.getElementById("num2Box").style.backgroundColor = "#F4E1D2";  // Reset to default color
     }, 500);
+
+    correctStreak++;
+
+    // If the correct streak is 5, increment the multiplier by 0.2
+    if (correctStreak === 5) {
+        multiplier += 0.2;
+        correctStreak = 0; // Reset the streak count
+    }
+
+    // Display the updated multiplier
+    document.getElementById("multiplierDisplay").textContent = `Multiplier: x${multiplier.toFixed(1)}`;
 
     if (questionsAnswered >= 30) {
         gameOver();
@@ -208,6 +375,11 @@ function handleIncorrectAnswer() {
     questionsAnswered++;
     updateProgressBar();
     flashFlashcards("incorrectFlash");
+        correctStreak = 0;
+        // Reset the multiplier
+    multiplier = 1;
+        document.getElementById("multiplierDisplay").textContent = `Multiplier: x${multiplier}`;
+
     
     if (questionsAnswered >= 30) {
         gameOver();
@@ -239,14 +411,63 @@ function updateProgressBar() {
     document.getElementById("progressBar").style.width = `${percentageCompleted}%`;
 }
 
-function isTopFiveTime(time) {
-    if (highScores.length < 5) {
+function isTopTenTime(time) {
+    if (highScores.length < 10) {
         return true;
     }
     return time > Math.min(...highScores.map(score => score.points));
 }
 
+function handleKeyDown(event) {
+    if (!gameIsActive) {  
+        if (event.key === "Enter") {
+            startGame();
+            return; // Early return after starting the game.
+        } else {
+            return; // If the game isn't active and it's not the Enter key, return early.
+        }
+    }
+
+    // Capture keys 1-5 for answer choices.
+    const answerKeys = ["1", "2", "3", "4", "5"];
+    if (answerKeys.includes(event.key)) {
+        // Assuming you have a way to select the corresponding answer choice.
+        // For simplicity, we'll use a function `selectAnswer` which you might need to implement.
+        selectAnswer(event.key);
+    }
+
+    if (event.key === "Escape") {
+        newGame();
+    }
+}
+
+function selectAnswer(key) {
+    const choiceIndex = parseInt(key, 10) - 1;  // Convert the key (string) to an integer and adjust for 0-based indexing.
+    const choices = document.querySelectorAll('#choices button');  // Assuming choices are buttons inside an element with id "choices".
+    
+    if (choiceIndex >= 0 && choiceIndex < choices.length) {
+        // Simulate a click on the chosen button.
+        choices[choiceIndex].click();
+    }
+}
+
+function handlePlayingState(event) {
+    switch (event.key) {
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+            selectAnswer(event.key); // Assuming this function was provided before
+            break;
+        // ... handle other keys if needed
+        default:
+            break;
+    }
+}
+
 function gameOver() {
+    currentState = GAME_STATE.GAME_OVER;
     clearInterval(problemInterval);
 
     document.getElementById("num1Box").style.display = "none";
@@ -254,46 +475,75 @@ function gameOver() {
     document.getElementById("num2Box").style.display = "none";
     document.getElementById("choices").style.display = "none";
     document.getElementById("stopwatch").textContent = "";
-
     document.getElementById("celebration").style.display = "block";
-
     document.getElementById("feedback").textContent = `You answered ${correctCount} out of 30 correctly and scored ${totalPoints} points!`;
+    document.getElementById("multiplierDisplay").style.display = "none";
 
-    if (isTopFiveTime(totalPoints)) {
-        const playerName = prompt("Congratulations! You made it to the top 5. Enter your name for the leaderboard:", "Player");
-        if (playerName !== null && playerName !== "") {
-            database.ref('highScores').push({ name: playerName, points: totalPoints });
+    displayHighScores().then(() => {
+        if (isTopTenTime(totalPoints)) {
+            modal.style.display = "block";  // Show the modal if it's a top 10 score
         }
-    }
+    });
 
-    displayHighScores();
     document.getElementById("newGameButton").style.display = "block";
+    document.removeEventListener("keydown", handleKeyDown);
+}
+
+function handleGameOverState(event) {
+    // Define what should happen when a key is pressed in the GAME_OVER state.
+    // For now, it's an empty function. Add logic here if needed later.
 }
 
 function displayHighScores() {
-  database.ref('highScores').orderByChild('points').once('value').then(snapshot => {
     const highScoresList = document.getElementById("highScores");
-    highScoresList.innerHTML = "";
 
-    // Convert the snapshot into an array
-    const scores = [];
-    snapshot.forEach(childSnapshot => {
-      scores.push(childSnapshot.val());
+    // Return a new promise
+    return new Promise((resolve, reject) => {
+        // Set up a continuous listener on the high scores without the limitToLast restriction
+        database.ref('highScores').orderByChild('points').once('value', snapshot => {
+            highScoresList.innerHTML = "";
+
+            const scores = [];
+            snapshot.forEach(childSnapshot => {
+                scores.push(childSnapshot.val());
+            });
+
+            // Filter the scores to get the highest score for each player
+            const uniqueScores = scores.reduce((acc, currentScore) => {
+                const existingScore = acc.find(score => score.name === currentScore.name);
+                if (!existingScore) {
+                    acc.push(currentScore);
+                } else if (existingScore.points < currentScore.points) {
+                    existingScore.points = currentScore.points;
+                }
+                return acc;
+            }, []);
+
+            // Sort the unique scores in descending order by points
+            uniqueScores.sort((a, b) => b.points - a.points);
+
+            // Update the highScores array
+            highScores = uniqueScores;
+
+            // Display only the top 10 unique scores
+            for (let i = 0; i < Math.min(10, uniqueScores.length); i++) {
+                const listItem = document.createElement("li");
+                const shortName = uniqueScores[i].name.substring(0, 3).toUpperCase();
+                listItem.textContent = `${i + 1}) ${shortName} . . . . ${uniqueScores[i].points} pts`;
+                highScoresList.appendChild(listItem);
+            }
+
+            // Resolve the promise after high scores are updated
+            resolve();
+        }).catch(error => {
+            // Reject the promise if there's an error
+            console.error("Error fetching high scores:", error);
+            reject(error);
+        });
     });
-
-    // Sort the scores in descending order by points
-    scores.sort((a, b) => b.points - a.points);
-
-    // Display only the top 10 scores
-    for (let i = 0; i < Math.min(10, scores.length); i++) {
-      const listItem = document.createElement("li");
-      // Limit the name to 3 characters
-      const shortName = scores[i].name.substring(0, 3).toUpperCase();
-      listItem.textContent = `${i + 1}) ${shortName} . . . . ${scores[i].points} pts`;
-      highScoresList.appendChild(listItem);
-    }
-  });
 }
+
+
 
 function clearHighScores() {
     const password = prompt("Enter the password to clear high scores:");
@@ -315,22 +565,23 @@ function clearHighScores() {
 }
 
 function newGame() {
-    document.getElementById("newGameButton").style.display = "none";
-    document.getElementById("feedback").textContent = "";
-    document.getElementById("num1Box").style.display = "inline-block";
-    document.getElementById("multiplier").style.display = "inline-block";
-    document.getElementById("num2Box").style.display = "inline-block";
-    document.getElementById("celebration").style.display = "none";
-    document.getElementById("choices").style.display = "block";  // <-- Add this line to show the choices again
-
-    consecutiveCorrect = 0;
+    // 1. Resetting all game-related variables to their initial states
     correctCount = 0;
     questionsAnswered = 0;
     totalPoints = 0;
-    document.getElementById("stopwatch").textContent = "5000";
-    document.getElementById("progressBar").style.width = "0%";
-
-    // Reset the game state and start a new game
+    consecutiveCorrect = 0;
+    gameIsActive = true;
+    
+    // 2. Hide and show appropriate elements
+    document.getElementById("num1Box").style.display = "";
+    document.getElementById("multiplier").style.display = "";
+    document.getElementById("num2Box").style.display = "";
+    document.getElementById("choices").style.display = "";
+    document.getElementById("celebration").style.display = "none";
+    document.getElementById("newGameButton").style.display = "none";
+    document.getElementById("feedback").textContent = "";
+    document.addEventListener("keydown", handleKeyDown);
+    
+    // 3. Begin a new game
     startGame();
 }
-

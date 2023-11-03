@@ -22,15 +22,15 @@
     <span id="num1Box" class="flashCard"></span> <!-- Box for the first number -->
     <span id="multiplier" class="flashCard">x</span> <!-- Box for the multiplication symbol -->
     <span id="num2Box" class="flashCard"></span> <!-- Box for the second number -->
-        </div>
-        <div id="streakFeedback" style="font-size: 24px; font-weight: bold; margin: 10px 0;"></div>
         <div id="choices">
-    <button onclick="handleChoice(this)">??</button>
-    <button onclick="handleChoice(this)">??</button>
-    <button onclick="handleChoice(this)">??</button>
-    <button onclick="handleChoice(this)">??</button>
-    <button onclick="handleChoice(this)">??</button>
+    <button id="choice1">??</button>
+    <button id="choice2">??</button>
+    <button id="choice3">??</button>
+    <button id="choice4">??</button>
+    <button id="choice5">??</button>
         </div>
+                </div>
+        <div id="multiplierDisplay">Multiplier: x1</div>
         <span id="stopwatch">1000</span>
         <div id="feedback"></div>
         <div id="celebration" style="display: none; font-size: 36px;">
@@ -49,9 +49,17 @@
 <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
 <audio id="incorrectSound" src="incorrect.mp3" preload="auto"></audio>
 
-
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+<div id="highscoreModal" class="modal">
+    <div class="modal-content">
+        <p>Congratulations! You made it to the top 10. Enter your name for the leaderboard:</p>
+        <input type="text" id="playerNameInput" maxlength="3">
+        <button id="modalCloseButton">Close</button>
+        <button id="modalSubmitButton">Submit</button>
+    </div>
+</div>
 
 
 <script src="script.js"></script>

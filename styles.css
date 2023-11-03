@@ -22,16 +22,24 @@ h1, h2 {
     font-family: 'Press Start 2P', cursive;
 }
 
-button, #choices button {
+button {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #3498db;
+    background-color: #3498db; /* Ensure that the default background color is set to blue */
     color: #fff;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s; /* This provides a smooth color change on hover */
     margin: 10px 0;
+}
+
+#choices button {
+    background-color: #3498db; /* Set the background color for buttons inside #choices */
+    font-size: 20px;
+    margin: 5px;
+    animation-fill-mode: forwards !important;
+    animation-duration: 1s;
 }
 
 button:hover, #choices button:hover {
@@ -98,13 +106,6 @@ ul#highScores li {
 
 ul#highScores li:last-child {
     border-bottom: none;
-}
-
-#choices button {
-    font-size: 20px;
-    margin: 5px;
-    animation-fill-mode: forwards !important;
-    animation-duration: 1s;
 }
 
 .flashCard {
@@ -174,3 +175,39 @@ button[onclick="clearHighScores()"]:hover {
     background-color: #c0392b;
 }
 
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%; /* Could be more or less, depending on screen size */
+}
+
+/* Close Button */
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
