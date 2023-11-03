@@ -211,3 +211,11 @@ button[onclick="clearHighScores()"]:hover {
     text-decoration: none;
     cursor: pointer;
 }
+
+.answer-button {
+    width: 75px;  /* adjust as needed */
+    height: 30px;  /* adjust as needed */
+    text-align: center;
+    line-height: 0px;  /* to vertically center the text inside */
+    /* add other desired styles, such as padding, border, etc. */
+}
