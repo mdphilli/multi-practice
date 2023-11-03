@@ -500,7 +500,7 @@ function displayHighScores() {
     // Return a new promise
     return new Promise((resolve, reject) => {
         // Set up a continuous listener on the high scores without the limitToLast restriction
-        database.ref('highScores').orderByChild('points').once('value', snapshot => {
+        database.ref('highScores').orderByChild('points').on('value', snapshot => {
             highScoresList.innerHTML = "";
 
             const scores = [];
