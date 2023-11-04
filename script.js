@@ -32,6 +32,42 @@ let closeButton;
 let submitButton;
 let playerNameInput;
 
+// Put this code inside your script.js file
+
+// Define the secret key combination, for example "up, up, down, down, left, right, left, right, b, a"
+const secretCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+let currentKeyIndex = 0;
+
+// Add a keydown event listener to the document
+document.addEventListener('keydown', (e) => {
+  // Check if the pressed key is the next in the secret code sequence
+  if (e.code === secretCode[currentKeyIndex]) {
+    // Increment the index if the correct key was pressed
+    currentKeyIndex++;
+
+    // Check if the entire code was correctly entered
+    if (currentKeyIndex === secretCode.length) {
+      triggerEasterEgg(); // Call the function to trigger the Easter Egg
+      currentKeyIndex = 0; // Reset the index
+    }
+  } else {
+    // Reset the index if the wrong key was pressed
+    currentKeyIndex = 0;
+  }
+});
+
+function triggerEasterEgg() {
+  const arcadeBanner = document.getElementById('arcadeBanner'); // Select the image by its ID from the HTML
+  const originalBannerSrc = arcadeBanner.src; // Save the original source
+
+  arcadeBanner.src = 'rew.jpeg'; // Replace with the path to your Easter Egg image
+
+  // Set a timeout to revert to the original banner after 5 seconds
+  setTimeout(() => {
+    arcadeBanner.src = originalBannerSrc;
+  }, 5000);
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     modal = document.getElementById("highscoreModal");
     closeButton = document.getElementById("modalCloseButton");
